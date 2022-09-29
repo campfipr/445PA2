@@ -5,7 +5,6 @@ Simple nb_classifier.
 Initial Author: Kevin Molloy and Patrick Campfield
 """
 
-
 import numpy as np
 import math
 
@@ -81,15 +80,35 @@ class NBClassifier:
 
         ## Need a category for each column in X
         assert(X.shape[1] == X_categorical.shape[0])
-
         ## each row in training data needs a label
         assert(X.shape[0] == y.shape[0])
 
 
         self.classes = list(set(y))
         self.priors = {}
+        self.probs = []
+        unq, countY = np.unique(y, return_counts=True)
+        index = 0
+        for count, _ in enumerate(X_categorical):
+            self.probs.append({})
+            for i in self.classes:
+                self.probs[count][i] = {}
 
-        raise NotImplementedError
+        for countX, i in enumerate(X):
+            for count, _ in enumerate(X_categorical):
+                if i[count] not in self.probs[count][y[countX]]:
+                    self.probs[count][y[countX]][i[count]] = 1
+                else:
+                    self.probs[count][y[countX]][i[count]] += 1
+
+        for countX, i in enumerate(X):
+            for count, _ in enumerate(X_categorical):
+                print(1)
+                print(self.probs[count][y[countX]][i[count]] / countY[y[countX]])
+                self.probs[count][y[countX]][i[count]] = self.probs[count][y[countX]][i[count]] / countY[y[countX]]
+                print(0)
+        print(self.probs)
+                
 
     def feature_class_prob(self,feature_index, class_label, x):
         """
