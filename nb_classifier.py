@@ -5,7 +5,6 @@ Simple nb_classifier.
 Initial Author: Kevin Molloy and Patrick Campfield
 """
 
-from itertools import count
 import numpy as np
 import math
 
@@ -20,7 +19,7 @@ class NBClassifier:
         feature_dists (list):  A placeholder for each feature/column in X
                                that holds the distributions for that feature.
     """
-
+    ALPHA = 1
 
     def __init__(self, smoothing_flag=False):
         """
@@ -89,19 +88,24 @@ class NBClassifier:
         self.priors = {}
         self.probs = np.array([],dtype=object)
 
+        X_class = np.array([ X[y == c] for c in self.classes], dtype=object)
+
         if self.smoothing:
-            pass
+            self.get_probability(X_class=X_class, X_categorical=X_categorical, alpha=self.ALPHA)
         else:
-            X_class = np.array([ X[y == c] for c in self.classes], dtype=object)
-            for col, j in enumerate(X_categorical):
+            self.get_probability(X_class=X_class, X_categorical=X_categorical, alpha=0)
+        print(self.probs)
+
+    def get_probability(self, X_class, X_categorical, alpha):
+        for col, j in enumerate(X_categorical):
+                self.priors = {}
                 if j:
                     for i in self.classes:
                         unq, count = np.unique(X_class[i][:,col], return_counts=True)
-                        self.priors = {i: {unq[k]: count[k]/np.sum(count) for k in range(len(unq))}}
+                        self.priors = {i: {unq[k]: (count[k] + alpha)/(np.sum(count) + len(unq)*alpha) for k in range(len(unq))}}
                         self.probs = np.append(self.probs, self.priors)
                 else:
                     pass
-        print(self.probs)
 
     def feature_class_prob(self,feature_index, class_label, x):
         """
@@ -170,7 +174,7 @@ def nb_demo():
     ## class labels (default borrower)
     y = np.array([0, 0, 0, 0, 1, 0, 0, 1, 0, 1])
 
-    nb = NBClassifier(smoothing_flag=False)
+    nb = NBClassifier(smoothing_flag=True)
 
     nb.fit(X, X_categorical, y)
     # test_pt = np.array([['No', 'Married', 120]])
