@@ -99,13 +99,17 @@ class NBClassifier:
     def get_probability(self, X_class, X_categorical, alpha):
         for col, j in enumerate(X_categorical):
                 self.priors = {}
-                if j:
-                    for i in self.classes:
-                        unq, count = np.unique(X_class[i][:,col], return_counts=True)
+                for i in self.classes:
+                    unq, count = np.unique(X_class[i][:,col], return_counts=True)
+                    if j:
                         self.priors = {i: {unq[k]: (count[k] + alpha)/(np.sum(count) + len(unq)*alpha) for k in range(len(unq))}}
                         self.probs = np.append(self.probs, self.priors)
-                else:
-                    pass
+                    else:
+                        mean = np.mean(unq.astype(np.double))
+                        std = np.std(unq.astype(np.double), ddof=1)
+                        var = np.var(unq.astype(np.double), ddof=1)
+                        self.priors = {i: (mean, std, var)}
+                        self.probs = np.append(self.probs, self.priors)
 
     def feature_class_prob(self,feature_index, class_label, x):
         """
@@ -174,7 +178,7 @@ def nb_demo():
     ## class labels (default borrower)
     y = np.array([0, 0, 0, 0, 1, 0, 0, 1, 0, 1])
 
-    nb = NBClassifier(smoothing_flag=True)
+    nb = NBClassifier(smoothing_flag=False)
 
     nb.fit(X, X_categorical, y)
     # test_pt = np.array([['No', 'Married', 120]])
