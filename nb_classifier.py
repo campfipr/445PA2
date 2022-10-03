@@ -5,6 +5,7 @@ Simple nb_classifier.
 Initial Author: Kevin Molloy and Patrick Campfield
 """
 
+from itertools import count
 import numpy as np
 import math
 
@@ -86,29 +87,24 @@ class NBClassifier:
 
         self.classes = list(set(y))
         self.priors = {}
-        self.probs = []
-        unq, countY = np.unique(y, return_counts=True)
-        index = 0
-        for count, _ in enumerate(X_categorical):
-            self.probs.append({})
-            for i in self.classes:
-                self.probs[count][i] = {}
+        self.probs = np.array([],dtype=object)
 
-        for countX, i in enumerate(X):
-            for count, _ in enumerate(X_categorical):
-                if i[count] not in self.probs[count][y[countX]]:
-                    self.probs[count][y[countX]][i[count]] = 1
+        if self.smoothing:
+            pass
+        else:
+            X_class = np.array([ X[y == c] for c in self.classes], dtype=object)
+            for col, j in enumerate(X_categorical):
+                if j:
+                    for i in self.classes:
+                        self.priors = {}
+                        self.priors[i] = {}
+                        unq, count = np.unique(X_class[i][:,col], return_counts=True)
+                        self.priors[i] = {unq[k]: count[k]/np.sum(count) for k in range(len(unq))}
+                        self.probs = np.append(self.probs, self.priors)
+
                 else:
-                    self.probs[count][y[countX]][i[count]] += 1
-
-        for countX, i in enumerate(X):
-            for count, _ in enumerate(X_categorical):
-                print(1)
-                print(self.probs[count][y[countX]][i[count]] / countY[y[countX]])
-                self.probs[count][y[countX]][i[count]] = self.probs[count][y[countX]][i[count]] / countY[y[countX]]
-                print(0)
+                    pass
         print(self.probs)
-                
 
     def feature_class_prob(self,feature_index, class_label, x):
         """
@@ -180,13 +176,12 @@ def nb_demo():
     nb = NBClassifier(smoothing_flag=False)
 
     nb.fit(X, X_categorical, y)
-
-    test_pt = np.array([['No', 'Married', 120]])
-    yhat = nb.predict(test_pt)
+    # test_pt = np.array([['No', 'Married', 120]])
+    # yhat = nb.predict(test_pt)
 
     # the book computes this as 0.0016 * alpha
-    print('Predicted value for someone who does not a homeowner,')
-    print('is married, and earns 120K a year is:', yhat)
+    # print('Predicted value for someone who does not a homeowner,')
+    # print('is married, and earns 120K a year is:', yhat)
 
 
 def main():
