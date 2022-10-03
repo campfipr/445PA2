@@ -96,12 +96,9 @@ class NBClassifier:
             for col, j in enumerate(X_categorical):
                 if j:
                     for i in self.classes:
-                        self.priors = {}
-                        self.priors[i] = {}
                         unq, count = np.unique(X_class[i][:,col], return_counts=True)
-                        self.priors[i] = {unq[k]: count[k]/np.sum(count) for k in range(len(unq))}
+                        self.priors = {i: {unq[k]: count[k]/np.sum(count) for k in range(len(unq))}}
                         self.probs = np.append(self.probs, self.priors)
-
                 else:
                     pass
         print(self.probs)
