@@ -152,7 +152,7 @@ class NBClassifier:
         """
 
         ## validate that x contains exactly the number of features
-        assert(x.shape[1] == self.X_categorical.shape[0])
+        assert(X.shape[1] == self.X_categorical.shape[0])
 
         raise NotImplementedError
 
