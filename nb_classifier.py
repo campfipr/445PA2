@@ -87,6 +87,10 @@ class NBClassifier:
         self.classes = list(set(y))
         self.priors = {}
         self.probs = np.array([],dtype=object)
+        self.mean = np.array([])
+        self.var = np.array([])
+        self.var = np.array([])
+        self.X_categorical = X_categorical
 
         X_class = np.array([ X[y == c] for c in self.classes], dtype=object)
 
@@ -105,11 +109,14 @@ class NBClassifier:
                         self.priors = {i: {unq[k]: (count[k] + alpha)/(np.sum(count) + len(unq)*alpha) for k in range(len(unq))}}
                         self.probs = np.append(self.probs, self.priors)
                     else:
-                        mean = np.mean(unq.astype(np.double))
-                        std = np.std(unq.astype(np.double), ddof=1)
-                        var = np.var(unq.astype(np.double), ddof=1)
-                        self.priors = {i: (mean, std, var)}
+                        self.mean = np.mean(unq.astype(np.double))
+                        self.std = np.std(unq.astype(np.double), ddof=1)
+                        self.var = np.var(unq.astype(np.double), ddof=1)
+                        self.priors = {i: (self.mean, self.std, self.var)}
                         self.probs = np.append(self.probs, self.priors)
+
+    
+
 
     def feature_class_prob(self,feature_index, class_label, x):
         """
@@ -136,7 +143,9 @@ class NBClassifier:
         assert class_label < len(self.classes), \
             'invalid class label passed to feature_class_prob'
 
-        raise NotImplementedError
+        return  (feature_dist = x | self.prob[class_label]) * (self.prob[class_label]) / feature_dist = x
+
+        
 
 
 
@@ -153,8 +162,9 @@ class NBClassifier:
 
         ## validate that x contains exactly the number of features
         assert(X.shape[1] == self.X_categorical.shape[0])
-
-        raise NotImplementedError
+        
+        y_hat = [self.feature_class_prob(x) for x in X]
+        return np.array(y_hat)
 
 
 def nb_demo():
