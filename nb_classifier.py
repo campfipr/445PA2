@@ -153,16 +153,18 @@ class NBClassifier:
         ## validate that x contains exactly the number of features
         assert(X.shape[1] == self.X_categorical.shape[0])
         predicted_labels = np.array([])
-        for feature_index in range(self.X_categorical.size):
+        for x in X:
             label_percents = np.array([])
             class_labels = np.array([])
-            for class_label in self.classes:           
-                label_percents = np.append(label_percents, self.feature_class_prob(feature_index=feature_index, class_label=class_label, x=X[0,feature_index]))
-                class_labels = np.append(class_labels, class_label)
+            for class_label in self.classes:  
+                for feature_index in range(self.X_categorical.size):         
+                    label_percents = np.append(label_percents, 
+                        self.feature_class_prob(feature_index=feature_index, class_label=class_label, x=x[feature_index]))
+                    class_labels = np.append(class_labels, class_label)
             predicted_labels = np.append(predicted_labels, class_labels[np.argmax(label_percents)])
             
                     
-        return(predicted_labels)
+        return predicted_labels
 
 
 def nb_demo():
