@@ -88,7 +88,6 @@ class NBClassifier:
         self.classes = list(set(y))
         self.priors = {}
         self.X_categorical = X_categorical
-
         X_class = np.array([ X[y == c] for c in self.classes], dtype=object)
 
         if self.smoothing:
@@ -99,8 +98,10 @@ class NBClassifier:
     def get_probability(self, X_class, X_categorical, alpha):
         for col, j in enumerate(X_categorical):
                 self.priors = {}
+
                 for i in self.classes:
                     unq, count = np.unique(X_class[i][:,col], return_counts=True)
+                    print(unq, count)
                     if j:
                         self.priors[i] = {unq[k]: (count[k] + alpha)/(np.sum(count) + len(unq)*alpha) for k in range(len(unq))}
                     else:
@@ -155,8 +156,18 @@ class NBClassifier:
 
         ## validate that x contains exactly the number of features
         assert(X.shape[1] == self.X_categorical.shape[0])
-
-        print(1)
+        predicted_labels = np.array([])
+        for x in X:
+            label_percents = np.array([])
+            class_labels = np.array([])
+            for feature_index in self.feature_dists:
+                for class_label in self.classes:
+                    np.append(label_percents, self.feature_class_prob(feature_index=feature_index, class_label=class_label, x=x))
+                    np.append(class_labels, class_label)
+            np.append(predicted_labels, class_label[np.argmax(label_percents)])
+            
+                    
+        return(predicted_labels)
 
 
 def nb_demo():
