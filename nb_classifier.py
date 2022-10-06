@@ -157,10 +157,9 @@ class NBClassifier:
             label_percents = np.array([])
             class_labels = np.array([])
             for class_label in self.classes:           
-                print(self.feature_class_prob(feature_index=feature_index, class_label=class_label, x=X[0,feature_index]))
                 label_percents = np.append(label_percents, self.feature_class_prob(feature_index=feature_index, class_label=class_label, x=X[0,feature_index]))
                 class_labels = np.append(class_labels, class_label)
-            predicted_labels = np.append(predicted_labels, class_label[np.argmax(label_percents)])
+                predicted_labels = np.append(predicted_labels, class_labels[np.argmax(label_percents)])
             
                     
         return(predicted_labels)
@@ -197,8 +196,8 @@ def nb_demo():
     p = nb.feature_class_prob(feature_index=2, class_label=class_label, x=x_pt)
 
     # # the book computes this as 0.0016 * alpha
-    # print('Predicted value for someone who does not a homeowner,')
-    # print('is married, and earns 120K a year is:', yhat)
+    print('Predicted value for someone who does not a homeowner,')
+    print('is married, and earns 120K a year is:', yhat)
 
 
 def main():
