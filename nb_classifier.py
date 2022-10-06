@@ -159,7 +159,7 @@ class NBClassifier:
             for class_label in self.classes:           
                 label_percents = np.append(label_percents, self.feature_class_prob(feature_index=feature_index, class_label=class_label, x=X[0,feature_index]))
                 class_labels = np.append(class_labels, class_label)
-                predicted_labels = np.append(predicted_labels, class_labels[np.argmax(label_percents)])
+            predicted_labels = np.append(predicted_labels, class_labels[np.argmax(label_percents)])
             
                     
         return(predicted_labels)
