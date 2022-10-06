@@ -97,19 +97,18 @@ class NBClassifier:
 
     def get_probability(self, X_class, X_categorical, alpha):
         for col, j in enumerate(X_categorical):
-                self.priors = {}
+            self.priors = {}
 
-                for i in self.classes:
-                    unq, count = np.unique(X_class[i][:,col], return_counts=True)
-                    print(unq, count)
-                    if j:
-                        self.priors[i] = {unq[k]: (count[k] + alpha)/(np.sum(count) + len(unq)*alpha) for k in range(len(unq))}
-                    else:
-                        mean = np.mean(unq.astype(np.double))
-                        std = np.std(unq.astype(np.double), ddof=1)
-                        var = np.var(unq.astype(np.double), ddof=1)
-                        self.priors[i] = (mean, std, var)
-                self.feature_dists =  np.append(self.feature_dists, self.priors)
+            for i in self.classes:
+                unq, count = np.unique(X_class[i][:,col], return_counts=True)
+                if j:
+                    self.priors[i] = {unq[k]: (count[k] + alpha)/(np.sum(count) + len(unq)*alpha) for k in range(len(unq))}
+                else:
+                    mean = np.mean(unq.astype(np.double))
+                    std = np.std(unq.astype(np.double), ddof=1)
+                    var = np.var(unq.astype(np.double), ddof=1)
+                    self.priors[i] = (mean, std, var)
+            self.feature_dists =  np.append(self.feature_dists, self.priors)
 
     def feature_class_prob(self,feature_index, class_label, x):
         """
@@ -125,9 +124,7 @@ class NBClassifier:
 
         :return: P(class_label | feature(fi) = x) the probability
         """
-
         feature_dist = self.feature_dists[feature_index]
-
         # validate feature_index
         assert feature_index < self.X_categorical.shape[0], \
             'Invalid feature index passed to feature_class_prob'
@@ -136,8 +133,7 @@ class NBClassifier:
         assert class_label < len(self.classes), \
             'invalid class label passed to feature_class_prob'
 
-        if self.X_categorical[feature_index]: 
-            print(feature_dist[class_label])
+        if self.X_categorical[feature_index]:
             return feature_dist[class_label][x]
         else: 
             return stats.norm.pdf(x, feature_dist[class_label][0], feature_dist[class_label][1])
@@ -157,14 +153,14 @@ class NBClassifier:
         ## validate that x contains exactly the number of features
         assert(X.shape[1] == self.X_categorical.shape[0])
         predicted_labels = np.array([])
-        for x in X:
+        for feature_index in range(self.X_categorical.size):
             label_percents = np.array([])
             class_labels = np.array([])
-            for feature_index in self.feature_dists:
-                for class_label in self.classes:
-                    np.append(label_percents, self.feature_class_prob(feature_index=feature_index, class_label=class_label, x=x))
-                    np.append(class_labels, class_label)
-            np.append(predicted_labels, class_label[np.argmax(label_percents)])
+            for class_label in self.classes:           
+                print(self.feature_class_prob(feature_index=feature_index, class_label=class_label, x=X[0,feature_index]))
+                label_percents = np.append(label_percents, self.feature_class_prob(feature_index=feature_index, class_label=class_label, x=X[0,feature_index]))
+                class_labels = np.append(class_labels, class_label)
+            predicted_labels = np.append(predicted_labels, class_label[np.argmax(label_percents)])
             
                     
         return(predicted_labels)
@@ -199,11 +195,10 @@ def nb_demo():
     x_pt = 120.
     class_label = 0
     p = nb.feature_class_prob(feature_index=2, class_label=class_label, x=x_pt)
-    print(p)
 
-    # the book computes this as 0.0016 * alpha
-    print('Predicted value for someone who does not a homeowner,')
-    print('is married, and earns 120K a year is:', yhat)
+    # # the book computes this as 0.0016 * alpha
+    # print('Predicted value for someone who does not a homeowner,')
+    # print('is married, and earns 120K a year is:', yhat)
 
 
 def main():
