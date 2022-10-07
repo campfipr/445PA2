@@ -84,31 +84,49 @@ class NBClassifier:
         ## each row in training data needs a label
         assert(X.shape[0] == y.shape[0])
 
-
         self.classes = list(set(y))
         self.priors = {}
         self.X_categorical = X_categorical
         X_class = np.array([ X[y == c] for c in self.classes], dtype=object)
 
         if self.smoothing:
-            self.get_probability(X_class=X_class, X_categorical=X_categorical, alpha=self.ALPHA)
-        else:
-            self.get_probability(X_class=X_class, X_categorical=X_categorical, alpha=0)
-
-    def get_probability(self, X_class, X_categorical, alpha):
-        for col, j in enumerate(X_categorical):
-            self.priors = {}
-
-            for i in self.classes:
-                unq, count = np.unique(X_class[i][:,col], return_counts=True)
+            for col, j in enumerate(X_categorical):
+                self.priors = {}
                 if j:
-                    self.priors[i] = {unq[k]: (count[k] + alpha)/(np.sum(count) + len(unq)*alpha) for k in range(len(unq))}
+                    unqInCol = list(set(X[:,col]))
+                    for i in self.classes:
+                        unq, count = np.unique(X_class[i][:,col], return_counts=True)
+                        for k in range(len(unqInCol)):
+                            if unqInCol[k] in unq:
+                                self.priors[i] = {unqInCol[k]: (count[k] + self.ALPHA)/(np.sum(count) + len(unq)*self.ALPHA)}
+                            else:
+                                self.priors[i] = {unqInCol[k]: (self.ALPHA)/(np.sum(count) + len(unqInCol)*self.ALPHA)}
+                    self.feature_dists =  np.append(self.feature_dists, self.priors)
                 else:
-                    mean = np.mean(unq.astype(np.double))
-                    std = np.std(unq.astype(np.double), ddof=1)
-                    var = np.var(unq.astype(np.double), ddof=1)
-                    self.priors[i] = (mean, std, var)
-            self.feature_dists =  np.append(self.feature_dists, self.priors)
+                    for i in self.classes:
+                        unq = np.unique(X_class[i][:,col])
+                        mean = np.mean(unq.astype(np.double))
+                        std = np.std(unq.astype(np.double), ddof=1)
+                        var = np.var(unq.astype(np.double), ddof=1)
+                        self.priors[i] = (mean, std, var)
+                    self.feature_dists =  np.append(self.feature_dists, self.priors)
+        else:
+            for col, j in enumerate(X_categorical):
+                self.priors = {}
+
+                if j:
+                    for i in self.classes:
+                        unq, count = np.unique(X_class[i][:,col], return_counts=True)
+                        self.priors[i] = {unq[k]: (count[k])/(np.sum(count)) for k in range(len(unq))}
+                else:
+                    for i in self.classes:
+                        unq = np.unique(X_class[i][:,col])
+                        mean = np.mean(unq.astype(np.double))
+                        std = np.std(unq.astype(np.double), ddof=1)
+                        var = np.var(unq.astype(np.double), ddof=1)
+                        self.priors[i] = (mean, std, var)
+                self.feature_dists =  np.append(self.feature_dists, self.priors)
+
 
     def feature_class_prob(self,feature_index, class_label, x):
         """
@@ -135,9 +153,8 @@ class NBClassifier:
 
         if self.X_categorical[feature_index]:
             return feature_dist[class_label][x]
-        else: 
-            print(feature_dist)
-            return stats.norm.pdf(x, feature_dist[class_label][0], feature_dist[class_label][1])
+        else:
+            return stats.norm.pdf(x.astype(np.double), feature_dist[class_label][0], feature_dist[class_label][1])
 
 
     def predict(self, X):
@@ -189,18 +206,18 @@ def nb_demo():
     ## class labels (default borrower)
     y = np.array([0, 0, 0, 0, 1, 0, 0, 1, 0, 1])
 
-    nb = NBClassifier(smoothing_flag=False)
+    nb = NBClassifier(smoothing_flag=True)
 
     nb.fit(X, X_categorical, y)
-    test_pt = np.array([['No', 'Married', 120]])
-    yhat = nb.predict(test_pt)
-    x_pt = 120.
-    class_label = 0
-    p = nb.feature_class_prob(feature_index=2, class_label=class_label, x=x_pt)
+    # test_pt = np.array([['No', 'Married', 120]])
+    # yhat = nb.predict(test_pt)
+    # x_pt = 120.
+    # class_label = 0
+    # p = nb.feature_class_prob(feature_index=2, class_label=class_label, x=x_pt)
 
     # # the book computes this as 0.0016 * alpha
-    print('Predicted value for someone who does not a homeowner,')
-    print('is married, and earns 120K a year is:', yhat)
+    # print('Predicted value for someone who does not a homeowner,')
+    # print('is married, and earns 120K a year is:', yhat)
 
 
 def main():
