@@ -136,6 +136,7 @@ class NBClassifier:
         if self.X_categorical[feature_index]:
             return feature_dist[class_label][x]
         else: 
+            print(feature_dist)
             return stats.norm.pdf(x, feature_dist[class_label][0], feature_dist[class_label][1])
 
 
