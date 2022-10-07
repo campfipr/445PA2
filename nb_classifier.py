@@ -20,7 +20,6 @@ class NBClassifier:
         feature_dists (list):  A placeholder for each feature/column in X
                                that holds the distributions for that feature.
     """
-    ALPHA = 1
 
     def __init__(self, smoothing_flag=False):
         """
@@ -44,6 +43,7 @@ class NBClassifier:
              and the value is the computed probability from the training data 
         """
         self.feature_dists = []
+        self.ALPHA = 1.0
 
 
     def get_smoothing(self):
@@ -96,11 +96,13 @@ class NBClassifier:
                     unqInCol = list(set(X[:,col]))
                     for i in self.classes:
                         unq, count = np.unique(X_class[i][:,col], return_counts=True)
-                        for k in range(len(unqInCol)):
-                            if unqInCol[k] in unq:
-                                self.priors[i] = {unqInCol[k]: (count[k] + self.ALPHA)/(np.sum(count) + len(unq)*self.ALPHA)}
-                            else:
-                                self.priors[i] = {unqInCol[k]: (self.ALPHA)/(np.sum(count) + len(unqInCol)*self.ALPHA)}
+                        self.priors[i] = {unq[k]: (count[k] + self.ALPHA)/(np.sum(count) + len(unqInCol)) for k in range(len(unq))}
+                        if len(unq) != len(unqInCol):
+                            extra = {}
+                            for k in unqInCol:
+                                if k not in unq:
+                                    extra[i] = {k: (self.ALPHA)/(np.sum(count) + len(unq)*self.ALPHA)}
+                            self.priors[i].update(extra[i])
                     self.feature_dists =  np.append(self.feature_dists, self.priors)
                 else:
                     for i in self.classes:
@@ -115,9 +117,16 @@ class NBClassifier:
                 self.priors = {}
 
                 if j:
+                    unqInCol = list(set(X[:,col]))
                     for i in self.classes:
                         unq, count = np.unique(X_class[i][:,col], return_counts=True)
                         self.priors[i] = {unq[k]: (count[k])/(np.sum(count)) for k in range(len(unq))}
+                        if len(unq) != len(unqInCol):
+                            extra = {}
+                            for k in unqInCol:
+                                if k not in unq:
+                                    extra[i] = {k: np.divide(0,np.sum(count) + len(unqInCol))}
+                            self.priors[i].update(extra[i])
                 else:
                     for i in self.classes:
                         unq = np.unique(X_class[i][:,col])
@@ -154,7 +163,8 @@ class NBClassifier:
         if self.X_categorical[feature_index]:
             return feature_dist[class_label][x]
         else:
-            return stats.norm.pdf(x.astype(np.double), feature_dist[class_label][0], feature_dist[class_label][1])
+            print(type(x))
+            return stats.norm.pdf(x, feature_dist[class_label][0], feature_dist[class_label][1])
 
 
     def predict(self, X):
@@ -171,6 +181,7 @@ class NBClassifier:
         ## validate that x contains exactly the number of features
         assert(X.shape[1] == self.X_categorical.shape[0])
         predicted_labels = np.array([])
+        print()
         for x in X:
             label_percents = np.array([])
             class_labels = np.array([])
@@ -209,6 +220,7 @@ def nb_demo():
     nb = NBClassifier(smoothing_flag=True)
 
     nb.fit(X, X_categorical, y)
+    print(nb.feature_dists)
     # test_pt = np.array([['No', 'Married', 120]])
     # yhat = nb.predict(test_pt)
     # x_pt = 120.
