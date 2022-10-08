@@ -2,7 +2,7 @@
 
 Simple nb_classifier.
 
-Initial Author: Kevin Molloy and Patrick Campfield
+Initial Author: Kevin Molloy and Patrick Campfield And Thomas Lane
 """
 
 import numpy as np
