@@ -128,10 +128,9 @@ class NBClassifier:
                             self.priors[i].update(extra[i])
                 else:
                     for i in self.classes:
-                        unq = np.unique(X_class[i][:,col])
-                        mean = np.mean(unq.astype(np.double))
-                        std = np.std(unq.astype(np.double), ddof=1)
-                        var = np.var(unq.astype(np.double), ddof=1)
+                        mean = np.mean(X_class[i][:,col].astype(np.double))
+                        std = np.std(X_class[i][:,col].astype(np.double), ddof=1)
+                        var = np.var(X_class[i][:,col].astype(np.double), ddof=1)
                         self.priors[i] = (mean, std, var)
                 self.feature_dists =  np.append(self.feature_dists, self.priors)
 
@@ -158,10 +157,7 @@ class NBClassifier:
         # validate class_label
         assert class_label < len(self.classes), \
             'invalid class label passed to feature_class_prob'
-        print(x)
-        print(feature_index)
-        print(feature_dist[class_label])
-        print(self.feature_dists)
+
         if self.X_categorical[feature_index]:
             return feature_dist[class_label][x]
         else:

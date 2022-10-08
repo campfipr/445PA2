@@ -126,7 +126,6 @@ class Test_NB(unittest.TestCase):
         # other label
         class_label = 1
         p = nb.feature_class_prob(feature_index=1, class_label=class_label, x=x_pt)
-        print(nb.feature_dists)
         err_msg = "Martial status = " + x_pt + "for class " \
                   + str(class_label) + " wrong prob"
         if nb.get_smoothing():
