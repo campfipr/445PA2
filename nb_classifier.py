@@ -101,15 +101,14 @@ class NBClassifier:
                             extra = {}
                             for k in unqInCol:
                                 if k not in unq:
-                                    extra[i] = {k: (self.ALPHA)/(np.sum(count) + len(unq)*self.ALPHA)}
+                                    extra[i] = {k: (self.ALPHA)/(np.sum(count) + len(unq)+self.ALPHA)}
                             self.priors[i].update(extra[i])
                     self.feature_dists =  np.append(self.feature_dists, self.priors)
                 else:
-                    for i in self.classes:
-                        unq = np.unique(X_class[i][:,col])
-                        mean = np.mean(unq.astype(np.double))
-                        std = np.std(unq.astype(np.double), ddof=1)
-                        var = np.var(unq.astype(np.double), ddof=1)
+                    for i in self.classes:              
+                        mean = np.mean(X_class[i][:,col].astype(np.float64))
+                        std = np.std(X_class[i][:,col].astype(np.float64), ddof=1)
+                        var = np.var(X_class[i][:,col].astype(np.float64), ddof=1)
                         self.priors[i] = (mean, std, var)
                     self.feature_dists =  np.append(self.feature_dists, self.priors)
         else:
@@ -159,11 +158,13 @@ class NBClassifier:
         # validate class_label
         assert class_label < len(self.classes), \
             'invalid class label passed to feature_class_prob'
-
+        print(x)
+        print(feature_index)
+        print(feature_dist[class_label])
+        print(self.feature_dists)
         if self.X_categorical[feature_index]:
             return feature_dist[class_label][x]
         else:
-            print(type(x))
             return stats.norm.pdf(x, feature_dist[class_label][0], feature_dist[class_label][1])
 
 
@@ -181,7 +182,6 @@ class NBClassifier:
         ## validate that x contains exactly the number of features
         assert(X.shape[1] == self.X_categorical.shape[0])
         predicted_labels = np.array([])
-        print()
         for x in X:
             label_percents = np.array([])
             class_labels = np.array([])
@@ -220,7 +220,6 @@ def nb_demo():
     nb = NBClassifier(smoothing_flag=True)
 
     nb.fit(X, X_categorical, y)
-    print(nb.feature_dists)
     # test_pt = np.array([['No', 'Married', 120]])
     # yhat = nb.predict(test_pt)
     # x_pt = 120.
